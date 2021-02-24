@@ -1,7 +1,8 @@
-const inputEl = document.querySelector('.input');
-const countriesListEl = document.querySelector('.js-countries');
+const formRef = document.querySelector('#search-form');
+const galleryRef = document.querySelector('.js-gallery');
+const inputRef = formRef.elements.query;
+const buttonRef = document.querySelector('.js-button');
+const labelBtn = document.querySelector('.label');
+const spinnerRef = document.querySelector('.spinner');
 
-// inputEl.textContent = inputEl.value;
-// const countryName = inputEl.textContent;
-
-export { inputEl, countriesListEl };
+export { formRef, galleryRef, inputRef, buttonRef, labelBtn, spinnerRef };

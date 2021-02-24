@@ -1,61 +1,58 @@
-import { inputEl, countriesListEl } from './js/refs';
-import { countriesMarkup, oneCountryMarkup } from './js/articles-markup';
+import './styles.css';
+import {
+  formRef,
+  galleryRef,
+  inputRef,
+  buttonRef,
+  labelBtn,
+  spinnerRef,
+} from './js/refs';
 import debounce from 'lodash.debounce';
-import error from './js/notifications';
-// import fetchCountries from './js/fetch-countries';
-import './js/notifications';
+import apiService from './js/apiService'; // импортировали объект, в котором ф-ция fetchImages является его методом. Поэтому дальше чтобы обратиться к этой ф-ции пишем apiService.fetchImages;
+import imagesMarkup from './js/image-markup';
+import loadMoreBtn from './js/load-more-btn';
 
-inputEl.addEventListener(
+// (let queryImages = ''; // эта переменная для того, чтобы в ней хранился введенный запрос;
+// // когда в инпуте хотя бы 1 раз произойдет запрос, тогда в этой переменной
+// // уже будет записан этот запрос и мы можем передать его при нажатии на кнопку Показать еще.
+// let page = 1; // эти переменные не должны висеть во внешнем коде (в логике), поэтому мы их переносим в объект apiService, в котором они будут его свойствами.)
+
+inputRef.addEventListener(
   'input',
   debounce(event => {
     event.preventDefault();
-    // console.log(event.target.value); // одно и то же // console.log(inputEl.value);
+    inputRef.textContent = inputRef.value;
+    apiService.query = inputRef.textContent; // записываем значение в queryImages объекта apiService через set.
+    apiService.resetPage();
 
-    inputEl.textContent = inputEl.value;
-    const countryName = inputEl.textContent;
+    loadMoreBtn.show();
+    loadMoreBtn.disable();
 
-    if (countryName === ' ') {
-      return;
-    }
+    apiService.fetchImages().then(data => {
+      if (inputRef.textContent === ' ') {
+        return;
+      }
+      imagesMarkup(data);
 
-    const url = `https://restcountries.eu/rest/v2/name/${countryName}`;
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        if (data.length === 1) {
-          oneCountryMarkup(data);
-          inputEl.value = '';
-        }
-        if (data.length >= 2 && data.length <= 10) {
-          countriesMarkup(data); // потому что data у нас - это уже массив объектов.
-        }
-        if (data.length > 10) {
-          error({
-            text: 'Too many matches found. Please enter a more specific query!',
-          });
-        }
-      })
-      .catch(error => console.log(error));
+      loadMoreBtn.enable();
+    });
 
-    countriesListEl.innerHTML = '';
+    galleryRef.innerHTML = '';
+    inputRef.value = ''; // inputRef.reset(); не срабатывает
   }, 600),
 );
 
-// fetchCountries(countryName).then(data => {
-//   console.log(data);
-//   if (data.length === 1) {
-//     oneCountryMarkup(data);
-//   }
-//   if (data.length >= 2 && data.length <= 10) {
-//     countriesMarkup(data); // потому что data у нас - это уже массив объектов.
-//   }
-//   if (data.length > 10) {
-//     error({
-//       text: 'Too many matches found. Please enter a more specific query!',
-//     });
-//   }
-// inputEl.value = '';
+buttonRef.addEventListener('click', event => {
+  loadMoreBtn.disable();
 
-// console.log(data.length);
-// countriesListEl.innerHTML = '';
-// });
+  apiService.fetchImages().then(data => {
+    imagesMarkup(data);
+
+    loadMoreBtn.enable();
+
+    window.scrollTo({
+      top: document.documentElement.offsetHeight,
+      behavior: 'smooth',
+    });
+  });
+});
